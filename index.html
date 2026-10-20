@@ -1,596 +1,455 @@
+
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>القاهرة الخضراء — Cairo is Green</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#06241b">
+<meta name="description" content="القاهرة الخضراء — ساهم في تخضير القاهرة ووثّق مساهمتك.">
+<title>القاهرة الخضراء | Cairo Is Green</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-  /* ================= 1. Tokens ================= */
-  :root{
-    --ink:#07211a;
-    --green-900:#06241b;
-    --green-800:#0a2f24;
-    --green-700:#0e3d2e;
-    --green-600:#13553f;
-    --gold-500:#c9a227;
-    --gold-400:#e0be55;
-    --gold-200:#f3e3b0;
-    --sand-50:#fcf8ef;
-    --sand-100:#f6eeda;
-    --sand-200:#eee0c4;
-    --red:#bf3b2b;
-    --amber:#c9821a;
-    --ok:#1f7a4d;
-    --muted:#5d6b62;
-    --radius:20px;
-    --shadow-lg:0 30px 70px -40px rgba(6,36,27,.75);
-    --shadow-sm:0 10px 30px -18px rgba(6,36,27,.55);
-    --display-ar:'Amiri',serif;
-    --display-en:'Cormorant Garamond',serif;
-    /* الزخارف: عين حورس، مفتاح الحياة، هلال ونجمة، هلال وصليب */
-    --star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23c9a227' stroke-width='1.5' opacity='0.15'%3E%3Cpath d='M 20 50 Q 30 35 45 40 Q 35 55 20 50 Z M 30 52 L 28 65 M 36 50 L 35 60'/%3E%3Cpath d='M 150 120 L 150 150 M 140 130 Q 150 110 160 130 M 135 150 L 165 150'/%3E%3Cpath d='M 170 30 A 15 15 0 1 1 150 10 A 10 10 0 1 0 170 30 Z'/%3E%3Cpath d='M 180 20 L 183 25 L 188 22 L 185 27 Z'/%3E%3Cpath d='M 30 160 A 10 10 0 1 1 20 170 A 8 8 0 1 0 30 160 Z'/%3E%3Cpath d='M 45 155 L 45 175 M 40 165 L 50 165'/%3E%3C/g%3E%3C/svg%3E");
-  }
-  *,*::before,*::after{box-sizing:border-box}
-  html{scroll-behavior:smooth;scroll-padding-top:84px}
-  body{margin:0;background:var(--sand-50);color:var(--ink);font-family:'Cairo',system-ui,sans-serif;font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased;}
-  img{max-width:100%;display:block} a{color:inherit;text-decoration:none} button{font:inherit;cursor:pointer}
-  h1,h2,h3{margin:0 0 .4em;line-height:1.25} p{margin:0 0 1em}
-  .wrap{width:100%;max-width:1240px;margin-inline:auto;padding-inline:20px}
-  .display{font-family:var(--display-ar);font-weight:700}
-  html[lang="en"] .display{font-family:var(--display-en)}
-  .muted{color:var(--muted)} .small{font-size:.85rem}
-
-  /* الأزرار */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.85rem 1.6rem;border-radius:999px;border:1px solid transparent;font-weight:700;font-size:.95rem;transition:.25s ease;white-space:nowrap; cursor:pointer;}
-  .btn.gold{background:linear-gradient(135deg,var(--gold-400),var(--gold-500) 60%,#a8821a);color:#231a04;box-shadow:0 12px 28px -14px rgba(201,162,39,.9);}
-  .btn.gold:hover{transform:translateY(-2px);box-shadow:0 18px 34px -14px rgba(201,162,39,.95)}
-  .btn.outline{border-color:var(--gold-500);color:var(--gold-200);background:transparent}
-  .btn.outline:hover{background:rgba(201,162,39,.12)}
-  .btn.ghost{border-color:rgba(201,162,39,.5);color:var(--gold-200);padding:.55rem 1rem;border-radius:999px}
-  .btn.ghost:hover{background:rgba(201,162,39,.15)}
-  .btn.wide{width:100%} .btn[disabled]{opacity:.65;cursor:default}
-
-  /* الهيدر */
-  .site-header{position:sticky;top:0;z-index:1000;background:rgba(6,36,27,.86);backdrop-filter:blur(14px);border-bottom:1px solid rgba(201,162,39,.28);}
-  .header-inner{display:flex;align-items:center;gap:1.2rem;min-height:72px}
-  .brand{display:flex;align-items:center;gap:.7rem;color:var(--sand-50)}
-  .brand-mark{width:38px;height:38px;flex:0 0 auto}
-  .brand-text{display:flex;flex-direction:column;line-height:1.15}
-  .brand-text strong{font-size:1.22rem;color:var(--gold-200)}
-  .brand-text small{font-size:.7rem;color:rgba(246,238,218,.6)}
-  .nav{display:flex;gap:1.35rem;margin-inline-start:auto;font-size:.9rem;font-weight:600}
-  .nav a{color:rgba(246,238,218,.8);padding:.35rem 0;border-bottom:1px solid transparent;transition:.2s}
-  .nav a:hover{color:var(--gold-200);border-color:var(--gold-500)}
-  .header-actions{display:flex;align-items:center;gap:.6rem}
-  .points-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .8rem;border-radius:999px;font-size:.82rem;background:rgba(201,162,39,.14);border:1px solid rgba(201,162,39,.4);color:var(--gold-200);}
-  .points-pill svg{width:15px;height:15px;fill:var(--gold-400)} .points-pill b{font-size:.95rem}
-  .lang-btn{display:flex;align-items:center;justify-content:center;width:42px;height:42px;padding:0;border-radius:50%;border:1px solid rgba(201,162,39,.5);background:transparent;color:var(--gold-200);transition:.2s;}
-  .lang-btn:hover{background:rgba(201,162,39,.15);} .lang-btn svg{width:22px;height:22px;}
-
-  /* الهيرو */
-  .hero{position:relative;overflow:hidden;background:var(--green-900);color:var(--sand-100);padding:clamp(3.5rem,9vw,7rem) 0 clamp(2rem,4vw,3rem)}
-  .hero-bg{position:absolute;inset:0;pointer-events:none;background-image:var(--star),radial-gradient(60% 60% at 80% 10%,rgba(28,122,88,.45),transparent 70%),radial-gradient(50% 50% at 10% 90%,rgba(201,162,39,.18),transparent 70%);background-size:200px 200px,auto,auto;opacity:.8;}
-  .hero-inner{position:relative;text-align:center}
-  .badge{display:inline-block;padding:.4rem 1.1rem;border-radius:999px;font-size:.8rem;font-weight:600;color:var(--gold-200);border:1px solid rgba(201,162,39,.45);background:rgba(201,162,39,.1);margin-bottom:1.4rem;}
-  .hero-title{font-size:clamp(2.6rem,7vw,5rem);margin-bottom:.35em;background:linear-gradient(180deg,#fff8e2,var(--gold-400) 55%,#a8821a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 10px 30px rgba(201,162,39,.25));}
-  .hero-lead{max-width:660px;margin:0 auto 2rem;font-size:clamp(1rem,1.6vw,1.16rem);color:rgba(246,238,218,.82);font-weight:300}
-  .hero-actions{display:flex;gap:.85rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.6rem}
-  .hero-stats{list-style:none;display:flex;justify-content:center;gap:clamp(1.5rem,5vw,4rem);margin:0;padding:0;flex-wrap:wrap;}
-  .hero-stats li{display:flex;flex-direction:column;align-items:center}
-  .hero-stats b{font-size:clamp(1.5rem,3vw,2.1rem);color:var(--gold-200);font-weight:700}
-  .hero-stats span{font-size:.8rem;color:rgba(246,238,218,.6)}
-  .ornament{position:relative;display:flex;justify-content:center;margin-top:2.5rem}
-  .ornament svg{width:min(260px,60%);height:auto}
-
-  /* أقسام */
-  .section-head{text-align:center;margin-bottom:2.4rem}
-  .section-head h2{font-size:clamp(1.8rem,3.4vw,2.6rem);color:var(--green-800)}
-  .section-head p{color:var(--muted);max-width:620px;margin-inline:auto}
-  .section-head.light h2{color:var(--gold-200)} .section-head.light p{color:rgba(246,238,218,.7)}
-
-  /* خطوات */
-  .how{background:linear-gradient(180deg,var(--green-900),var(--green-800));color:var(--sand-100);padding:clamp(3rem,6vw,5rem) 0;position:relative}
-  .how::before{content:'';position:absolute;inset:0;background-image:var(--star);background-size:200px 200px;opacity:.15;pointer-events:none}
-  .how .wrap{position:relative}
-  .steps{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin:0;padding:0}
-  .steps li{background:rgba(255,255,255,.04);border:1px solid rgba(201,162,39,.3);border-radius:var(--radius);padding:1.6rem 1.3rem;position:relative;}
-  .steps .num{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold-400),var(--gold-500));color:#231a04;font-weight:800;margin-bottom:.9rem;box-shadow:0 8px 20px -8px rgba(201,162,39,.9);}
-  .steps h3{font-size:1.12rem;color:var(--gold-200);font-family:inherit} .steps p{margin:0;font-size:.9rem;color:rgba(246,238,218,.75);font-weight:300}
-
-  /* الخريطة */
-  .map-section{padding:clamp(3rem,6vw,5rem) 0}
-  .map-shell{position:relative;height:clamp(460px,74vh,760px);border-radius:24px;overflow:hidden;border:1px solid rgba(201,162,39,.4);box-shadow:var(--shadow-lg);background:#e9e5da;}
-  #map{height:100%;width:100%;min-height:460px;z-index:1;}
-  .map-note{text-align:center;font-size:.8rem;color:var(--muted);margin-top:.9rem}
-  .map-topbar{position:absolute;top:14px;inset-inline-start:14px;z-index:600;display:flex;flex-direction:column;gap:.6rem;width:min(400px,calc(100% - 28px));}
-  .searchbox{position:relative;display:flex;align-items:center;gap:.5rem;background:#fff;border-radius:14px;padding:.6rem .85rem;box-shadow:0 12px 30px -16px rgba(6,36,27,.6);border:1px solid rgba(201,162,39,.35);}
-  .searchbox svg{width:18px;height:18px;color:var(--muted);flex:0 0 auto}
-  .searchbox input{border:0;outline:0;width:100%;font:inherit;font-size:.92rem;background:transparent;color:var(--ink)}
-  .suggest{position:absolute;top:calc(100% + 6px);inset-inline:0;list-style:none;margin:0;padding:.35rem;background:#fff;border-radius:14px;border:1px solid rgba(201,162,39,.3);box-shadow:0 20px 44px -22px rgba(6,36,27,.6);max-height:260px;overflow:auto;z-index:10;}
-  .suggest li{display:flex;align-items:center;gap:.5rem;padding:.55rem .6rem;border-radius:10px;cursor:pointer;font-size:.9rem}
-  .suggest li:hover{background:var(--sand-100)} .suggest li small{margin-inline-start:auto;color:var(--muted);font-size:.75rem} .suggest li.empty{color:var(--muted);cursor:default}
-  .chips{display:flex;gap:.4rem;flex-wrap:wrap}
-  .chip{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .8rem;border-radius:999px;background:#fff;border:1px solid rgba(6,36,27,.12);font-size:.8rem;font-weight:600;color:var(--green-800);box-shadow:0 8px 20px -16px rgba(6,36,27,.7);transition:.2s;cursor:pointer;}
-  .chip.active{background:var(--green-800);color:var(--sand-50);border-color:var(--green-800)}
-  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
-  .dot.red{background:var(--red)} .dot.amber{background:var(--amber)} .dot.green{background:var(--ok)} .dot.all{background:linear-gradient(90deg,var(--red),var(--amber),var(--ok))}
-  .fab{position:absolute;inset-inline-end:14px;bottom:96px;z-index:600;width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:#fff;border:1px solid rgba(201,162,39,.4);color:var(--green-800);box-shadow:var(--shadow-sm);transition:.2s;cursor:pointer;}
-  .fab:hover{background:var(--gold-200)} .fab svg{width:20px;height:20px}
-
-  /* لوحة المنطقة */
-  .zone-panel{position:absolute;inset-inline-end:14px;top:14px;z-index:700;width:min(350px,calc(100% - 28px));max-height:calc(100% - 130px);overflow:auto;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border:1px solid rgba(201,162,39,.45);border-radius:18px;box-shadow:var(--shadow-lg);padding:1.1rem 1.2rem 1.3rem;opacity:0;transform:translateY(14px);pointer-events:none;transition:.28s ease;}
-  .zone-panel.open{opacity:1;transform:none;pointer-events:auto}
-  .zp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
-  .zp-status{font-size:.72rem;font-weight:700;padding:.25rem .7rem;border-radius:999px;color:#fff}
-  .zp-status.red{background:var(--red)} .zp-status.amber{background:var(--amber)} .zp-status.green{background:var(--ok)}
-  .zp-x{background:none;border:0;font-size:1.5rem;line-height:1;color:var(--muted);padding:0 .2rem;cursor:pointer;}
-  .zone-panel h3{font-size:1.5rem;color:var(--green-800);margin:0 0 .1rem}
-  .zp-district{margin:0 0 .9rem;color:var(--muted);font-size:.85rem}
-  .zp-progress{display:flex;align-items:center;gap:.7rem;margin-bottom:1rem;font-size:.8rem;color:var(--muted)}
-  .zp-progress .bar{flex:1;height:8px;border-radius:999px;background:var(--sand-200);overflow:hidden}
-  .zp-progress .bar i{display:block;height:100%;border-radius:999px;transition:width .5s}
-  .zp-progress .bar i.red{background:var(--red)} .zp-progress .bar i.amber{background:var(--amber)} .zp-progress .bar i.green{background:var(--ok)}
-  .zp-meta{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin:0 0 1rem}
-  .zp-meta div{background:var(--sand-50);border:1px solid rgba(201,162,39,.25);border-radius:12px;padding:.5rem .7rem}
-  .zp-meta dt{font-size:.7rem;color:var(--muted)} .zp-meta dd{margin:0;font-size:.85rem;font-weight:600;color:var(--green-800)}
-  .zp-meta em{display:block;font-size:.68rem;color:var(--muted);font-style:italic;font-weight:400}
-  .zp-gallery{margin-top:1.1rem;padding-top:.9rem;border-top:1px dashed rgba(201,162,39,.4)}
-  .zp-gallery figure{margin:0 0 .5rem;display:flex;align-items:center;gap:.6rem}
-  .zp-gallery img{width:46px;height:46px;object-fit:cover;border-radius:10px;border:1px solid rgba(201,162,39,.4)}
-  .zp-gallery .ph{width:46px;height:46px;display:grid;place-items:center;border-radius:10px;background:var(--sand-100);font-size:1.2rem}
-  .zp-gallery figcaption{font-size:.8rem;color:var(--green-800);font-weight:600}
-
-  /* العلامات على الخريطة */
-  .zone-marker{background:none;border:0}
-  .zone-marker .pin{display:grid;place-items:center;width:34px;height:34px;border-radius:50% 50% 50% 6px;transform:rotate(-45deg);border:2px solid #fff8e7;box-shadow:0 8px 16px -6px rgba(6,36,27,.65);transition:.2s;}
-  .zone-marker .pin svg{width:17px;height:17px;fill:#fff;transform:rotate(45deg)}
-  .zone-marker.red .pin{background:linear-gradient(160deg,#d24b39,#8a2318);box-shadow:0 0 0 4px rgba(191,59,43,.18),0 8px 16px -6px rgba(6,36,27,.65)}
-  .zone-marker.amber .pin{background:linear-gradient(160deg,#e0a13a,#a86413)}
-  .zone-marker.green .pin{background:linear-gradient(160deg,#2e9e68,#14553a)}
-  .zone-marker:hover .pin{transform:rotate(-45deg) scale(1.1)}
-
-  /* الأثر والأشجار والشركات والتبرع */
-  .impact{padding:clamp(3rem,6vw,5rem) 0;background:var(--sand-50)}
-  .impact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
-  .stat-card{text-align:center;padding:1.8rem 1rem;border-radius:var(--radius);background:#fff;border:1px solid rgba(201,162,39,.4);box-shadow:var(--shadow-sm);position:relative;}
-  .stat-card::before{content:'';position:absolute;inset:6px;border:1px solid rgba(201,162,39,.22);border-radius:14px;pointer-events:none}
-  .stat-card b{display:block;font-size:clamp(1.5rem,3vw,2rem);color:var(--green-700);font-weight:800} .stat-card span{font-size:.82rem;color:var(--muted)}
-
-  .trees{padding:clamp(3rem,6vw,5rem) 0}
-  .tree-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
-  .tree-card{background:#fff;border:1px solid rgba(201,162,39,.38);border-radius:var(--radius);padding:1.5rem 1.2rem;box-shadow:var(--shadow-sm);transition:.25s;position:relative;overflow:hidden;}
-  .tree-card:hover{transform:translateY(-4px);box-shadow:0 24px 46px -28px rgba(6,36,27,.6)}
-  .tree-ico{width:46px;height:46px;color:var(--green-600);margin-bottom:.6rem}
-  .tree-card h3{font-size:1.25rem;color:var(--green-800);margin-bottom:.1rem}
-  .tree-card .sci{font-size:.72rem;color:var(--muted);font-style:italic;margin-bottom:.8rem}
-  .tags{list-style:none;display:flex;flex-wrap:wrap;gap:.35rem;margin:0;padding:0}
-  .tag{font-size:.7rem;padding:.22rem .6rem;border-radius:999px;background:var(--sand-100);color:var(--green-800);font-weight:600}
-  .tag.native{background:rgba(31,122,77,.12);color:var(--ok)}
-
-  .companies{padding:clamp(3rem,6vw,5rem) 0;background:linear-gradient(180deg,var(--green-800),var(--green-900));color:var(--sand-100);position:relative}
-  .plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;align-items:stretch}
-  .plan-card{position:relative;background:rgba(255,255,255,.05);border:1px solid rgba(201,162,39,.32);border-radius:var(--radius);padding:1.8rem 1.4rem;display:flex;flex-direction:column;}
-  .plan-card.featured{background:linear-gradient(180deg,rgba(201,162,39,.16),rgba(255,255,255,.05));border-color:var(--gold-500);box-shadow:0 24px 60px -34px rgba(201,162,39,.8);}
-  .plan-card h3{font-size:1.3rem;color:var(--gold-200)} .price{font-size:1.5rem;font-weight:800;color:#fff;margin:.2rem 0 1rem}
-  .plan-card ul{list-style:none;margin:0 0 1.4rem;padding:0;flex:1}
-  .plan-card li{font-size:.86rem;color:rgba(246,238,218,.8);margin-bottom:.5rem}
-
-  .donate{padding:clamp(3rem,6vw,5rem) 0}
-  .donate-inner{display:grid;grid-template-columns:1.2fr .8fr;gap:2rem;align-items:center}
-  .donate-card{background:#fff;border:1px solid rgba(201,162,39,.45);border-radius:var(--radius);padding:1.6rem;box-shadow:var(--shadow-lg);}
-  .amounts{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem}
-  .amount{padding:.8rem;border-radius:14px;border:1px solid rgba(6,36,27,.14);background:var(--sand-50);font-weight:800;color:var(--green-800);transition:.2s;cursor:pointer;}
-  .amount.active{background:var(--green-800);color:var(--gold-200);border-color:var(--green-800)}
-
-  .site-footer{background:var(--green-900);color:rgba(246,238,218,.75);padding:2.5rem 0;border-top:1px solid rgba(201,162,39,.25)}
-  .footer-inner{display:flex;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;align-items:flex-start}
-
-  /* النوافذ المنبثقة */
-  .modal{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;padding:1rem;background:rgba(6,36,27,.66);backdrop-filter:blur(6px);}
-  .modal[hidden]{display:none}
-  .modal-card{position:relative;width:min(460px,100%);background:#fff;border-radius:22px;border:1px solid rgba(201,162,39,.5);padding:1.8rem;box-shadow:0 40px 80px -40px #000;}
-  .modal-x{position:absolute;top:.7rem;inset-inline-end:.9rem;border:0;background:none;font-size:1.6rem;color:var(--muted);line-height:1;cursor:pointer;}
-  .modal-card h3{font-size:1.5rem;color:var(--green-800)}
-  .field{display:block;margin-bottom:1rem;font-size:.85rem;font-weight:600;color:var(--green-800)}
-  .field input{width:100%;margin-top:.4rem;padding:.75rem .9rem;border-radius:12px;border:1px solid rgba(6,36,27,.18);font:inherit;font-size:.9rem;background:var(--sand-50)}
-  .photo-preview img{width:100%;max-height:180px;object-fit:cover;border-radius:12px;margin-bottom:.8rem}
-  .modal-actions{display:flex;gap:.6rem;margin-top:1.2rem}
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:3000;background:var(--green-800);color:var(--gold-200);padding:.85rem 1.5rem;border-radius:999px;font-size:.9rem;font-weight:600;border:1px solid rgba(201,162,39,.5);box-shadow:0 20px 40px -20px #000;}
-
-  /* إعدادات الخريطة */
-  .leaflet-container{direction:ltr;font-family:'Cairo',sans-serif;background:#e9e5da;z-index:1;}
-
-  @media (max-width:1024px){
-    .tree-grid{grid-template-columns:repeat(2,1fr)} .impact-grid{grid-template-columns:repeat(2,1fr)} .nav{display:none} .donate-inner{grid-template-columns:1fr}
-  }
-  @media (max-width:760px){
-    .steps{grid-template-columns:1fr} .plan-grid{grid-template-columns:1fr} .map-shell{height:70vh} .map-topbar{width:calc(100% - 28px)}
-    .chips{overflow-x:auto;flex-wrap:nowrap} .zone-panel{inset:auto 10px 10px 10px;width:auto;top:auto;max-height:56%;transform:translateY(24px);} .fab{bottom:auto;top:132px}
-  }
+:root {
+  --dark:#06241b;
+  --dark2:#0e3d2e;
+  --gold:#c9a227;
+  --gold2:#e0be55;
+  --cream:#fcf8ef;
+  --green:#1f7a4d;
+  --amber:#c9821a;
+  --red:#bf3b2b;
+  --muted:#66736b;
+  --line:rgba(201,162,39,.35);
+  --shadow:0 15px 40px -24px #06241b99;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:85px}
+body{margin:0;background:var(--cream);color:var(--dark);font-family:Cairo,sans-serif;line-height:1.8}
+button,input,textarea,select{font:inherit}
+button,a{cursor:pointer}
+a{text-decoration:none;color:inherit}
+.wrap{width:min(1150px,calc(100% - 28px));margin:auto}
+.display{font-family:Amiri,serif}
+.muted{color:var(--muted)}
+.small{font-size:.84rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:30px;padding:10px 19px;font-weight:800}
+.gold{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#211900}
+.outline{border:1px solid var(--gold);color:#f3e3b0;background:transparent}
+.wide{width:100%}
+button:disabled{opacity:.55;cursor:not-allowed}
+.site-header{position:sticky;top:0;z-index:1000;background:#06241bf5;color:#f3e3b0;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+.header-inner{min-height:70px;display:flex;align-items:center;gap:15px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800}
+.brand-icon{font-size:1.8rem}
+.brand small{display:block;font-size:.7rem;color:#ddd}
+.nav{display:flex;gap:15px;margin-inline-start:auto;font-size:.86rem}
+.nav a:hover{color:var(--gold2)}
+.header-actions{display:flex;align-items:center;gap:8px}
+.points{border:1px solid var(--line);border-radius:25px;padding:4px 10px;white-space:nowrap;font-size:.82rem}
+.lang{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:transparent;color:#f3e3b0;font-weight:800}
+.hero{background:radial-gradient(ellipse at 80% 0%,#17543b,transparent 50%),linear-gradient(135deg,var(--dark),var(--dark2));color:var(--cream);padding:65px 0 42px;text-align:center}
+.eyebrow{display:inline-block;border:1px solid var(--line);border-radius:30px;padding:4px 14px;color:var(--gold2)}
+.hero h1{font-size:clamp(2.7rem,7vw,5rem);line-height:1.2;margin:18px 0;background:linear-gradient(#fff7dc,var(--gold2));color:transparent;background-clip:text}
+.hero p{max-width:680px;margin:0 auto 22px;color:#f6eeda}
+.hero-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.stats{display:flex;justify-content:center;gap:45px;flex-wrap:wrap;margin-top:30px}
+.stat strong{display:block;font-size:1.6rem;color:var(--gold2)}
+.stat span{font-size:.82rem}
+.section{padding:52px 0}
+.section-head{text-align:center;max-width:750px;margin:0 auto 25px}
+.section-head h2{font-size:clamp(1.8rem,4vw,2.5rem);color:var(--dark2);margin:0 0 6px}
+.section-head p{color:var(--muted);margin:0}
+.how,.dark-section{background:linear-gradient(var(--dark2),var(--dark));color:var(--cream)}
+.how .section-head h2,.dark-section .section-head h2{color:var(--gold2)}
+.how .section-head p,.dark-section .section-head p{color:#e4e8df}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.step{padding:20px;border:1px solid var(--line);border-radius:18px;background:#ffffff08}
+.num{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--gold2);font-weight:900}
+.step h3{color:var(--gold2);margin:10px 0 5px}
+.step p{margin:0;color:#e4e8df;font-size:.9rem}
+.map-shell{height:620px;min-height:450px;border:1px solid var(--line);border-radius:22px;overflow:hidden;position:relative;box-shadow:var(--shadow);background:#e8e5db}
+#mapCanvas{width:100%;height:100%;min-height:450px;position:relative}
+.map-top{position:absolute;z-index:500;top:12px;inset-inline-start:12px;width:min(370px,calc(100% - 24px));display:grid;gap:9px}
+.search{padding:9px 12px;background:white;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.search input{width:100%;border:0;outline:0;background:transparent}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:white;border:1px solid #d6d6cc;border-radius:25px;padding:6px 10px;font-size:.77rem;font-weight:700;color:var(--dark2)}
+.chip.active{background:var(--dark2);color:white}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-inline-end:4px}
+.dot.red{background:var(--red)}.dot.amber{background:var(--amber)}.dot.green{background:var(--green)}
+.zone-panel{position:absolute;z-index:600;inset-inline-end:12px;top:12px;width:min(320px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;background:#fffefaf5;border:1px solid var(--line);border-radius:17px;padding:16px;box-shadow:var(--shadow);display:none}
+.zone-panel.open{display:block}
+.zone-panel h3{margin:4px 0;color:var(--dark2)}
+.panel-top{display:flex;align-items:center;justify-content:space-between}
+.close{border:0;background:transparent;font-size:1.5rem;color:var(--muted)}
+.status{font-size:.75rem;border-radius:25px;color:white;padding:3px 9px}
+.status.red{background:var(--red)}.status.amber{background:var(--amber)}.status.green{background:var(--green)}
+.panel-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.panel-meta div{background:var(--cream);padding:8px;border-radius:10px;font-size:.82rem}
+.panel-meta small{display:block;color:var(--muted)}
+.fab{position:absolute;z-index:500;bottom:14px;inset-inline-end:14px;border:1px solid var(--line);border-radius:12px;background:white;padding:10px 13px;color:var(--dark2);font-weight:800}
+.map-note{text-align:center;color:var(--muted);font-size:.8rem;margin-top:10px}
+.impact-grid,.tree-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+.stat-card,.tree-card,.form-card,.leader-card{border:1px solid var(--line);background:white;border-radius:18px;padding:19px;box-shadow:var(--shadow)}
+.stat-card{text-align:center}
+.stat-card strong{display:block;font-size:1.8rem;color:var(--dark2)}
+.stat-card span{font-size:.82rem;color:var(--muted)}
+.tree-card h3{margin:5px 0;color:var(--dark2)}
+.latin{font-size:.78rem;color:var(--muted);font-style:italic}
+.tag{display:inline-block;border-radius:25px;background:#f6eeda;color:var(--dark2);padding:3px 8px;font-size:.72rem;margin:7px 3px 0 0}
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.plan-card{padding:18px;border:1px solid var(--line);border-radius:18px;background:#ffffff09}
+.plan-card h3{color:var(--gold2)}
+.plan-card p{color:#e4e8df;font-size:.9rem}
+.submit-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.form-card h3,.leader-card h3{margin:0 0 8px;color:var(--dark2)}
+.field{display:block;margin:12px 0;font-size:.88rem;font-weight:700;color:var(--dark2)}
+.field input,.field select,.field textarea{display:block;width:100%;margin-top:5px;padding:10px 12px;border:1px solid #d8d8ce;border-radius:10px;background:#fffefa;color:var(--dark)}
+.field textarea{min-height:80px;resize:vertical}
+.upload{border:2px dashed #c5b987;border-radius:13px;padding:15px;text-align:center;background:var(--cream)}
+.upload input{max-width:100%;margin-top:8px}
+.preview{max-width:100%;max-height:200px;margin:12px auto 0;border-radius:12px;display:none}
+.notice{padding:10px 12px;border-radius:10px;background:#fff5df;color:#76500e;font-size:.8rem;margin:12px 0}
+.leader-list{padding:0;list-style:none;margin:0}
+.leader-list li{display:flex;align-items:center;gap:10px;border-bottom:1px solid #eee8da;padding:10px 0}
+.rank{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#f6eeda;font-weight:800}
+.leader-list strong{margin-inline-start:auto;color:var(--dark2)}
+.activity{font-size:.85rem;border-top:1px solid #eee8da;padding:10px 0}
+.site-footer{background:var(--dark);color:#e5e1d3;padding:25px 0;border-top:1px solid var(--line)}
+.footer-inner{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.toast{position:fixed;z-index:3000;bottom:18px;left:50%;transform:translateX(-50%);background:var(--dark2);color:#f3e3b0;border:1px solid var(--line);padding:11px 17px;border-radius:25px;box-shadow:var(--shadow);max-width:calc(100% - 25px);text-align:center}
+.toast[hidden]{display:none}
+.leaflet-container{font-family:Cairo,sans-serif}
+.leaflet-popup-content{direction:rtl;text-align:right}
+html[lang=en] .leaflet-popup-content{direction:ltr;text-align:left}
+@media(max-width:950px){.nav{display:none}.impact-grid,.tree-grid{grid-template-columns:repeat(2,1fr)}.submit-grid{grid-template-columns:1fr}.header-inner{flex-wrap:wrap;padding:8px 0}.header-actions{margin-inline-start:auto}}
+@media(max-width:650px){.hero{padding:42px 0 30px}.steps,.plan-grid{grid-template-columns:1fr}.map-shell{height:72vh;min-height:490px}.zone-panel{top:auto;bottom:12px;max-height:45%;inset-inline:12px;width:auto}.map-top{width:calc(100% - 24px)}.impact-grid,.tree-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-card{padding:12px 6px}.section{padding:40px 0}.brand{font-size:.9rem}.stats{gap:22px}}
 </style>
 </head>
 <body>
-
 <header class="site-header">
-  <div class="wrap header-inner">
-    <a class="brand" href="#top">
-      <span class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 48 48" fill="none" stroke="url(#g1)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3e3b0"/><stop offset="1" stop-color="#c9a227"/></linearGradient></defs>
-          <path d="M8 26c6-10 14-14 22-10 4 2 6 6 8 10-6 8-14 12-22 8-4-2-6-5-8-8z"/>
-          <circle cx="20" cy="24" r="2.5" fill="url(#g1)" stroke="none"/>
-          <path d="M16 32l-2 6m6-4l-1 6"/><path d="M34 22c4 0 6 3 6 6s-3 4-6 4"/>
-        </svg>
-      </span>
-      <span class="brand-text">
-        <strong class="display" data-i18n="brand">القاهرة الخضراء</strong>
-        <small data-i18n="brand.sub">مبادرة تخضير القاهرة</small>
-      </span>
-    </a>
-    <nav class="nav">
-      <a href="#map" data-i18n="nav.map">الخريطة</a>
-      <a href="#how" data-i18n="nav.how">إزاي بتشتغل</a>
-      <a href="#impact" data-i18n="nav.impact">الأثر</a>
-      <a href="#trees" data-i18n="nav.trees">دليل الأشجار</a>
-      <a href="#companies" data-i18n="nav.companies">الشركات</a>
-    </nav>
-    <div class="header-actions">
-      <span class="points-pill" title="نقاطك">
-        <svg viewBox="0 0 24 24"><path d="M12 2 4 11h4l-3 5h5v6h2v-6h5l-3-5h4L12 2z"/></svg>
-        <b id="pointsValue">0</b>
-        <span data-i18n="nav.points">نقطة</span>
-      </span>
-      <button class="lang-btn" id="langBtn" type="button" aria-label="تغيير اللغة">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-          <path d="M16 6l1.5-1.5M17.5 8l1.5-1.5M16 10l1.5-1.5" stroke-width="1.2"/>
-        </svg>
-      </button>
-    </div>
-  </div>
+ <div class="wrap header-inner">
+  <a class="brand" href="#top"><span class="brand-icon">🌿</span><span><span data-i18n="brand">القاهرة الخضراء</span><small data-i18n="brandSub">مبادرة لتخضير القاهرة</small></span></a>
+  <nav class="nav"><a href="#mapSection" data-i18n="navMap">الخريطة</a><a href="#how" data-i18n="navHow">إزاي بتشتغل</a><a href="#impact" data-i18n="navImpact">الأثر</a><a href="#trees" data-i18n="navTrees">دليل الأشجار</a><a href="#participate" data-i18n="navJoin">ساهم</a></nav>
+  <div class="header-actions"><span class="points"><span data-i18n="pointsLabel">نقاطك</span>: <b id="pointsValue">0</b></span><button id="langBtn" class="lang" type="button">EN</button></div>
+ </div>
 </header>
 
-<section class="hero" id="top">
-  <div class="hero-bg" aria-hidden="true"></div>
-  <div class="wrap hero-inner">
-    <span class="badge" data-i18n="hero.badge">مبادرة وطنية لتخضير القاهرة</span>
-    <h1 class="display hero-title" data-i18n="hero.title">القاهرة الخضراء</h1>
-    <p class="hero-lead" data-i18n="hero.lead">خريطة حيّة لكل شجرة. اختر منطقة، ازرع شجرتها، صوّرها، وشوف الخريطة بتتحول من الأحمر للأخضر — بإيد شبابها.</p>
-    <div class="hero-actions">
-      <a class="btn gold" href="#map" data-i18n="hero.cta">افتح الخريطة</a>
-      <a class="btn outline" href="#how" data-i18n="hero.cta2">إزاي بتشتغل؟</a>
-    </div>
-    <ul class="hero-stats">
-      <li><b id="heroTrees">0</b><span data-i18n="stat.trees">شجرة</span></li>
-      <li><b id="heroZones">0</b><span data-i18n="stat.zones">منطقة</span></li>
-      <li><b id="heroCo2">0</b><span data-i18n="stat.co2">طن CO₂ سنويًا</span></li>
-    </ul>
-  </div>
-  <div class="ornament" aria-hidden="true">
-    <svg viewBox="0 0 240 24" fill="none" stroke="#c9a227"><path d="M0 12h96M144 12h96" stroke-width="1" opacity=".6"/><path d="M120 6c-3 0-5 2-5 5s2 5 5 5 5-2 5-5-2-5-5-5z" stroke-width="1.5"/><path d="M120 16v8M117 20h6M115 24h10" stroke-width="1.5" stroke-linecap="round"/></svg>
-  </div>
-</section>
+<section class="hero" id="top"><div class="wrap">
+ <span class="eyebrow" data-i18n="eyebrow">مبادرة مجتمعية لتخضير القاهرة</span>
+ <h1 class="display" data-i18n="heroTitle">القاهرة الخضراء</h1>
+ <p data-i18n="heroLead">كل مساهمة حقيقية خطوة نحو مدينة أنظف. اختار منطقة ووثّق مساهمتك.</p>
+ <div class="hero-actions"><a class="btn gold" href="#mapSection" data-i18n="openMap">افتح الخريطة</a><a class="btn outline" href="#participate" data-i18n="joinNow">وثّق مساهمتك</a></div>
+ <div class="stats"><div class="stat"><strong id="heroTrees">0</strong><span data-i18n="statTrees">مساهمات معتمدة</span></div><div class="stat"><strong id="heroZones">8</strong><span data-i18n="statZones">مناطق تجريبية</span></div><div class="stat"><strong id="heroPending">0</strong><span data-i18n="statPending">مساهمات تنتظر المراجعة</span></div></div>
+</div></section>
 
-<section class="how" id="how">
-  <div class="wrap">
-    <div class="section-head light"><h2 class="display" data-i18n="how.title">ثلاث خطوات… وشجرة</h2><p data-i18n="how.sub">من غير تعقيد ومن غير تسجيل طويل.</p></div>
-    <ol class="steps">
-      <li><span class="num">1</span><h3 data-i18n="how.s1t">اختار منطقتك</h3><p data-i18n="how.s1d">افتح الخريطة وشوف المناطق الحمراء القريبة منك ونوع الشجرة المطلوب.</p></li>
-      <li><span class="num">2</span><h3 data-i18n="how.s2t">ازرع شجرتك</h3><p data-i18n="how.s2d">ازرع بنفس النوع المحدد، واتأكد إن فيه مصدر ري ومكان مناسب.</p></li>
-      <li><span class="num">3</span><h3 data-i18n="how.s3t">صوّرها وارفعها</h3><p data-i18n="how.s3d">ارفع صورة الشجرة، والمنطقة بتتحول للأخضر وبتاخد نقاط على حسابك.</p></li>
-    </ol>
-  </div>
-</section>
+<section class="section how" id="how"><div class="wrap">
+ <div class="section-head"><h2 class="display" data-i18n="howTitle">مساهمة موثّقة في 3 خطوات</h2><p data-i18n="howLead">كل مساهمة تبدأ قيد المراجعة، ولا تحصل على نقاط تلقائيًا.</p></div>
+ <div class="steps">
+  <article class="step"><span class="num">1</span><h3 data-i18n="step1Title">اختار المنطقة</h3><p data-i18n="step1Text">حدد المكان الذي تريد المساهمة فيه.</p></article>
+  <article class="step"><span class="num">2</span><h3 data-i18n="step2Title">ارفع صورة فعلية</h3><p data-i18n="step2Text">الصورة مطلوبة لإرسال المساهمة.</p></article>
+  <article class="step"><span class="num">3</span><h3 data-i18n="step3Title">انتظر المراجعة</h3><p data-i18n="step3Text">لا يتم اعتماد المساهمة إلا بعد مراجعتها.</p></article>
+ </div>
+</div></section>
 
-<section class="map-section" id="map">
-  <div class="wrap section-head"><h2 class="display" data-i18n="map.title">خريطة التخضير</h2><p data-i18n="map.sub">اضغط على أي دبوس لتعرف نوع الشجرة والمساحة والمطلوب زراعته.</p></div>
-  <div class="wrap">
-    <div class="map-shell">
-      <div id="map"></div>
-      <div class="map-topbar">
-        <div class="searchbox">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <input id="searchInput" type="search" data-i18n-ph="search.ph" placeholder="ابحث عن حي أو منطقة…" autocomplete="off" />
-          <ul class="suggest" id="suggest" hidden></ul>
-        </div>
-        <div class="chips" id="filters">
-          <button class="chip active" type="button" data-filter="all"><i class="dot all"></i><span data-i18n="filter.all">الكل</span></button>
-          <button class="chip" type="button" data-filter="red"><i class="dot red"></i><span data-i18n="filter.red">تحتاج زراعة</span></button>
-          <button class="chip" type="button" data-filter="amber"><i class="dot amber"></i><span data-i18n="filter.amber">جارية</span></button>
-          <button class="chip" type="button" data-filter="green"><i class="dot green"></i><span data-i18n="filter.green">مكتملة</span></button>
-        </div>
-      </div>
-      <button class="fab" id="locateBtn" type="button" aria-label="موقعي">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-      <aside class="zone-panel" id="zonePanel"></aside>
-    </div>
-    <p class="map-note" data-i18n="map.note">بيانات تجريبية لنموذج أولي — الصور تُحفظ على جهازك فقط.</p>
+<section class="section" id="mapSection"><div class="wrap">
+ <div class="section-head"><h2 class="display" data-i18n="mapTitle">خريطة القاهرة الخضراء</h2><p data-i18n="mapLead">الأحمر يحتاج مساهمات، والذهبي قيد المراجعة، والأخضر للمساهمات المعتمدة فقط.</p></div>
+ <div class="map-shell">
+  <div id="mapCanvas" aria-label="Cairo satellite map"></div>
+  <div class="map-top">
+   <label class="search"><input id="searchInput" type="search" data-i18n-placeholder="searchPlaceholder" placeholder="ابحث عن منطقة…" autocomplete="off"></label>
+   <div class="filters" id="filters"><button class="chip active" data-filter="all" data-i18n="filterAll">الكل</button><button class="chip" data-filter="red"><i class="dot red"></i><span data-i18n="filterRed">تحتاج مساهمة</span></button><button class="chip" data-filter="amber"><i class="dot amber"></i><span data-i18n="filterAmber">قيد المراجعة</span></button><button class="chip" data-filter="green"><i class="dot green"></i><span data-i18n="filterGreen">معتمدة</span></button></div>
   </div>
-</section>
+  <button class="fab" id="locateBtn" type="button" data-i18n="myLocation">موقعي ⌖</button>
+  <aside class="zone-panel" id="zonePanel" aria-live="polite"></aside>
+ </div>
+ <p class="map-note" data-i18n="mapNote">الخريطة والبيانات نموذج تجريبي وليست بيانات رسمية.</p>
+</div></section>
 
-<section class="impact" id="impact">
-  <div class="wrap">
-    <div class="section-head"><h2 class="display" data-i18n="impact.title">الأثر بالأرقام</h2><p data-i18n="impact.sub">كل شجرة بتتحسب — مساحة، ظل، وهواء أنضف.</p></div>
-    <div class="impact-grid">
-      <div class="stat-card"><b id="impactTrees">0</b><span data-i18n="impact.trees">شجرة مزروعة</span></div>
-      <div class="stat-card"><b id="impactArea">0</b><span data-i18n="impact.area">م² مساحة خضراء</span></div>
-      <div class="stat-card"><b id="impactCo2">0</b><span data-i18n="impact.co2">كجم CO₂ سنويًا</span></div>
-      <div class="stat-card"><b id="impactSpecies">0</b><span data-i18n="impact.species">أنواع أشجار</span></div>
-    </div>
+<section class="section" id="impact"><div class="wrap">
+ <div class="section-head"><h2 class="display" data-i18n="impactTitle">الأثر بالأرقام</h2><p data-i18n="impactLead">الأرقام من بيانات هذا النموذج فقط.</p></div>
+ <div class="impact-grid"><div class="stat-card"><strong id="impactTrees">0</strong><span data-i18n="impactTreesLabel">مساهمات معتمدة</span></div><div class="stat-card"><strong id="impactPending">0</strong><span data-i18n="impactPendingLabel">قيد المراجعة</span></div><div class="stat-card"><strong id="impactZones">8</strong><span data-i18n="impactZonesLabel">مناطق تجريبية</span></div><div class="stat-card"><strong id="impactSpecies">6</strong><span data-i18n="impactSpeciesLabel">أنواع في الدليل</span></div></div>
+</div></section>
+
+<section class="section" id="trees"><div class="wrap">
+ <div class="section-head"><h2 class="display" data-i18n="treesTitle">دليل الأشجار</h2><p data-i18n="treesLead">اختيار النوع المناسب يحتاج مراعاة المناخ والتربة والمياه.</p></div><div class="tree-grid" id="treeGrid"></div>
+</div></section>
+
+<section class="section dark-section" id="participate"><div class="wrap">
+ <div class="section-head"><h2 class="display" data-i18n="joinTitle">خلّي مساهمتك جزءًا من التغيير</h2><p data-i18n="joinLead">ارفع صورة وحدد المنطقة. ستُحفظ المساهمة على هذا الجهاز وتظل معلّقة للمراجعة.</p></div>
+ <div class="submit-grid">
+  <form class="form-card" id="contributionForm">
+   <h3 data-i18n="formTitle">إضافة مساهمة جديدة</h3>
+   <label class="field"><span data-i18n="formName">اسم المشارك (اختياري)</span><input id="contributorName" maxlength="40" placeholder="اسمك"></label>
+   <label class="field"><span data-i18n="formZone">المنطقة</span><select id="zoneSelect" required></select></label>
+   <label class="field"><span data-i18n="formPhoto">صورة فعلية للمساهمة (مطلوبة)</span><div class="upload"><span data-i18n="uploadHint">اختر صورة من جهازك أو التقط صورة</span><input id="photoInput" type="file" accept="image/*" capture="environment" required><img id="photoPreview" class="preview" alt="معاينة الصورة"></div></label>
+   <label class="field"><span data-i18n="formDescription">وصف مختصر (اختياري)</span><textarea id="contributionDescription" maxlength="240" placeholder="اكتب تفاصيل بسيطة عن المساهمة…"></textarea></label>
+   <div class="notice" data-i18n="reviewNotice">رفع الصورة لا يمنح نقاطًا تلقائيًا. اعتماد المساهمة يتطلب مراجعة حقيقية.</div>
+   <button class="btn gold wide" id="submitBtn" type="submit" data-i18n="submitContribution">إرسال للمراجعة</button>
+  </form>
+  <div class="leader-card">
+   <h3 data-i18n="recentTitle">مساهمات هذا الجهاز</h3><p class="muted small" data-i18n="recentLead">القائمة محلية على هذا المتصفح ولن تظهر للآخرين دون قاعدة بيانات.</p><div id="activityList"></div>
+   <hr style="border:0;border-top:1px solid #eee8da;margin:18px 0">
+   <h3 data-i18n="leaderTitle">لوحة الشرف</h3><p class="muted small" data-i18n="leaderNote">يتم تفعيل ترتيب المستخدمين بعد ربط الحسابات وقاعدة البيانات.</p><ol class="leader-list" id="leaderList"></ol>
   </div>
-</section>
+ </div>
+</div></section>
 
-<section class="trees" id="trees">
-  <div class="wrap">
-    <div class="section-head"><h2 class="display" data-i18n="trees.title">دليل الأشجار</h2><p data-i18n="trees.sub">أنواع مختارة تناسب مناخ القاهرة وتقلل استهلاك المياه.</p></div>
-    <div class="tree-grid" id="treeGrid"></div>
-  </div>
-</section>
-
-<section class="companies" id="companies">
-  <div class="wrap">
-    <div class="section-head light"><h2 class="display" data-i18n="companies.title">للشركات والبراندات</h2><p data-i18n="companies.sub">ساهم كراعي، وخُد تقرير أثر موثّق باسم شركتك.</p></div>
-    <div class="plan-grid" id="planGrid"></div>
-  </div>
-</section>
-
-<section class="donate" id="donate">
-  <div class="wrap donate-inner">
-    <div class="donate-copy"><h2 class="display" data-i18n="donate.title">ساهم من أي مكان</h2><p data-i18n="donate.sub">مش لازم تكون في القاهرة عشان تخضّرها. تبرعك بيتحوّل لشجر في المناطق اللي لسه محتاجة.</p></div>
-    <div class="donate-card">
-      <div class="amounts" id="amounts"></div>
-      <button class="btn gold wide" id="donateCta" type="button" data-i18n="donate.cta">ساهم الآن</button>
-      <p class="muted small" data-i18n="donate.note">نموذج أولي — سيتم الربط بحساب رسمي معتمد قبل الإطلاق.</p>
-    </div>
-  </div>
-</section>
-
-<footer class="site-footer">
-  <div class="wrap footer-inner">
-    <div><strong class="display" data-i18n="brand">القاهرة الخضراء</strong><p class="muted small" data-i18n="footer.tag">مبادرة مجتمعية لتخضير القاهرة — الفكرة قابلة للتطبيق في كل محافظات مصر.</p></div>
-    <p class="muted small"><span data-i18n="footer.rights">© </span><span id="year"></span> · <span data-i18n="footer.demo">نموذج أولي</span></p>
-  </div>
-</footer>
-
-<div class="modal" id="plantModal" hidden>
-  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="plantTitle">
-    <button class="modal-x" type="button" data-close>×</button>
-    <h3 id="plantTitle" class="display" data-i18n="modal.title">سجّل شجرتك</h3>
-    <p class="muted small" data-i18n="modal.sub">اكتب اسمك (اختياري) وارفع صورة لو تحب.</p>
-    <form id="plantForm" novalidate>
-      <label class="field"><span data-i18n="form.name">اسمك</span><input name="name" type="text" maxlength="40" data-i18n-ph="form.namePh" placeholder="اسمك" /></label>
-      <label class="field"><span><span data-i18n="form.photo">صورة الشجرة</span> <em data-i18n="form.optional">(اختياري)</em></span><input name="photo" type="file" accept="image/*" capture="environment" /></label>
-      <div class="photo-preview" id="photoPreview"></div>
-      <div class="modal-actions"><button type="submit" class="btn gold" data-i18n="form.submit">أكّد الزراعة</button><button type="button" class="btn outline" data-close data-i18n="form.cancel">إلغاء</button></div>
-    </form>
-  </div>
-</div>
-
+<footer class="site-footer"><div class="wrap footer-inner"><div><strong class="display" data-i18n="brand">القاهرة الخضراء</strong><div class="small" data-i18n="footerText">فكرة مجتمعية قابلة للتطوير — البيانات الحالية تجريبية.</div></div><span class="small">© <span id="year"></span> Cairo Is Green</span></div></footer>
 <div class="toast" id="toast" hidden></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  // ====== 1. البيانات ======
-  const SPECIES = {
-    lebbeck: {ar:'لبخ',en:'Albizia',sci:'Albizia lebbeck',water:'low',shade:'high',native:true,shape:'broad'},
-    ficus: {ar:'فيكس',en:'Ficus',sci:'Ficus nitida',water:'med',shade:'high',native:false,shape:'broad'},
-    jacaranda: {ar:'جاكرندا',en:'Jacaranda',sci:'Jacaranda mimosifolia',water:'med',shade:'med',native:false,shape:'broad'},
-    palm: {ar:'نخيل بلدي',en:'Date Palm',sci:'Phoenix dactylifera',water:'low',shade:'low',native:true,shape:'palm'},
-    olive: {ar:'زيتون',en:'Olive',sci:'Olea europaea',water:'low',shade:'med',native:true,shape:'broad'},
-    acacia: {ar:'سنط',en:'Acacia',sci:'Acacia nilotica',water:'low',shade:'high',native:true,shape:'broad'},
-    moringa: {ar:'مورينجا',en:'Moringa',sci:'Moringa peregrina',water:'low',shade:'low',native:true,shape:'broad'},
-    poinciana: {ar:'بونسيانا',en:'Flamboyant',sci:'Delonix regia',water:'med',shade:'high',native:false,shape:'broad'}
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+
+const SPECIES = [
+ {id:'lebbeck',ar:'لبخ',en:'Lebbeck tree',sci:'Albizia lebbeck',water:'قليل المياه',waterEn:'Low water',native:true},
+ {id:'olive',ar:'زيتون',en:'Olive',sci:'Olea europaea',water:'قليل المياه',waterEn:'Low water',native:true},
+ {id:'acacia',ar:'سنط',en:'Acacia',sci:'Acacia spp.',water:'قليل المياه',waterEn:'Low water',native:true},
+ {id:'palm',ar:'نخيل بلدي',en:'Date palm',sci:'Phoenix dactylifera',water:'قليل المياه',waterEn:'Low water',native:true},
+ {id:'jacaranda',ar:'جاكرندا',en:'Jacaranda',sci:'Jacaranda mimosifolia',water:'متوسط المياه',waterEn:'Medium water',native:false},
+ {id:'poinciana',ar:'بونسيانا',en:'Flamboyant tree',sci:'Delonix regia',water:'متوسط المياه',waterEn:'Medium water',native:false}
+];
+
+const ZONES = [
+ {id:'zamalek',ar:'الزمالك',en:'Zamalek',lat:30.0605,lng:31.2197,species:'olive'},
+ {id:'gardencity',ar:'جاردن سيتي',en:'Garden City',lat:30.0380,lng:31.2300,species:'jacaranda'},
+ {id:'downtown',ar:'وسط البلد',en:'Downtown',lat:30.0452,lng:31.2420,species:'lebbeck'},
+ {id:'heliopolis',ar:'مصر الجديدة',en:'Heliopolis',lat:30.0900,lng:31.3300,species:'palm'},
+ {id:'nasr',ar:'مدينة نصر',en:'Nasr City',lat:30.0500,lng:31.3400,species:'acacia'},
+ {id:'maadi',ar:'المعادي',en:'Maadi',lat:29.9600,lng:31.2500,species:'olive'},
+ {id:'helwan',ar:'حلوان',en:'Helwan',lat:29.8500,lng:31.3300,species:'acacia'},
+ {id:'moqattam',ar:'المقطم',en:'Mokattam',lat:30.0100,lng:31.2900,species:'poinciana'}
+];
+
+const TXT = {
+ ar:{
+ brand:'القاهرة الخضراء',brandSub:'مبادرة لتخضير القاهرة',navMap:'الخريطة',navHow:'إزاي بتشتغل',navImpact:'الأثر',navTrees:'دليل الأشجار',navJoin:'ساهم',pointsLabel:'نقاطك',
+ eyebrow:'مبادرة مجتمعية لتخضير القاهرة',heroTitle:'القاهرة الخضراء',heroLead:'كل مساهمة حقيقية خطوة نحو مدينة أنظف. اختار منطقة ووثّق مساهمتك.',openMap:'افتح الخريطة',joinNow:'وثّق مساهمتك',statTrees:'مساهمات معتمدة',statZones:'مناطق تجريبية',statPending:'مساهمات تنتظر المراجعة',
+ howTitle:'مساهمة موثّقة في 3 خطوات',howLead:'كل مساهمة تبدأ قيد المراجعة، ولا تحصل على نقاط تلقائيًا.',step1Title:'اختار المنطقة',step1Text:'حدد المكان الذي تريد المساهمة فيه.',step2Title:'ارفع صورة فعلية',step2Text:'الصورة مطلوبة لإرسال المساهمة.',step3Title:'انتظر المراجعة',step3Text:'لا يتم اعتماد المساهمة إلا بعد مراجعتها.',
+ mapTitle:'خريطة القاهرة الخضراء',mapLead:'الأحمر يحتاج مساهمات، والذهبي قيد المراجعة، والأخضر للمساهمات المعتمدة فقط.',searchPlaceholder:'ابحث عن منطقة…',filterAll:'الكل',filterRed:'تحتاج مساهمة',filterAmber:'قيد المراجعة',filterGreen:'معتمدة',myLocation:'موقعي ⌖',mapNote:'الخريطة والبيانات نموذج تجريبي وليست بيانات رسمية.',
+ impactTitle:'الأثر بالأرقام',impactLead:'الأرقام من بيانات هذا النموذج فقط.',impactTreesLabel:'مساهمات معتمدة',impactPendingLabel:'قيد المراجعة',impactZonesLabel:'مناطق تجريبية',impactSpeciesLabel:'أنواع في الدليل',
+ treesTitle:'دليل الأشجار',treesLead:'اختيار النوع المناسب يحتاج مراعاة المناخ والتربة والمياه.',joinTitle:'خلّي مساهمتك جزءًا من التغيير',joinLead:'ارفع صورة وحدد المنطقة. ستُحفظ المساهمة على هذا الجهاز وتظل معلّقة للمراجعة.',
+ formTitle:'إضافة مساهمة جديدة',formName:'اسم المشارك (اختياري)',formZone:'المنطقة',formPhoto:'صورة فعلية للمساهمة (مطلوبة)',uploadHint:'اختر صورة من جهازك أو التقط صورة',formDescription:'وصف مختصر (اختياري)',reviewNotice:'رفع الصورة لا يمنح نقاطًا تلقائيًا. اعتماد المساهمة يتطلب مراجعة حقيقية.',submitContribution:'إرسال للمراجعة',recentTitle:'مساهمات هذا الجهاز',recentLead:'القائمة محلية على هذا المتصفح ولن تظهر للآخرين دون قاعدة بيانات.',leaderTitle:'لوحة الشرف',leaderNote:'يتم تفعيل ترتيب المستخدمين بعد ربط الحسابات وقاعدة البيانات.',footerText:'فكرة مجتمعية قابلة للتطوير — البيانات الحالية تجريبية.',
+ pending:'قيد المراجعة',approved:'معتمدة',rejected:'مرفوضة',needs:'تحتاج مساهمة',species:'نوع مقترح',water:'احتياج المياه',native:'مناسب محليًا',empty:'لا توجد مساهمات بعد.',toastPhoto:'من فضلك ارفع صورة فعلية قبل الإرسال.',toastSaved:'تم حفظ المساهمة محليًا وهي قيد المراجعة. لم تُضف نقاط.',toastSearch:'لم يتم العثور على منطقة.',toastLocation:'تعذر تحديد موقعك. تحقق من صلاحية الموقع واتصالك الآمن.',mySubmission:'مساهمة',desc:'الوصف',noDescription:'بدون وصف'
+ },
+ en:{
+ brand:'Cairo Is Green',brandSub:'Greening Cairo Initiative',navMap:'Map',navHow:'How it works',navImpact:'Impact',navTrees:'Tree guide',navJoin:'Contribute',pointsLabel:'Your points',
+ eyebrow:'A community initiative for a greener Cairo',heroTitle:'Cairo Is Green',heroLead:'Every real contribution is a step toward a cleaner city. Choose a zone and document your contribution.',openMap:'Open map',joinNow:'Document contribution',statTrees:'Approved contributions',statZones:'Demo zones',statPending:'Pending review',
+ howTitle:'A contribution in 3 steps',howLead:'Every submission starts pending review. No points are awarded automatically.',step1Title:'Choose a zone',step1Text:'Select where you want to contribute.',step2Title:'Upload a real photo',step2Text:'A photo is required to submit.',step3Title:'Wait for review',step3Text:'A submission is approved only after review.',
+ mapTitle:'Cairo Greening Map',mapLead:'Red needs contributions, gold is pending, and green means approved.',searchPlaceholder:'Search for a zone…',filterAll:'All',filterRed:'Needs contribution',filterAmber:'Pending review',filterGreen:'Approved',myLocation:'My location ⌖',mapNote:'The map and data are a prototype, not official records.',
+ impactTitle:'Impact in numbers',impactLead:'Figures come from this prototype only.',impactTreesLabel:'Approved contributions',impactPendingLabel:'Pending review',impactZonesLabel:'Demo zones',impactSpeciesLabel:'Tree species',
+ treesTitle:'Tree guide',treesLead:'Choose species based on climate, soil, and water.',joinTitle:'Make your contribution part of the change',joinLead:'Upload a photo and choose a zone. It is stored on this device and remains pending review.',
+ formTitle:'Add a contribution',formName:'Contributor name (optional)',formZone:'Zone',formPhoto:'Real contribution photo (required)',uploadHint:'Choose or take a photo',formDescription:'Short description (optional)',reviewNotice:'Uploading a photo does not award points. Approval requires a real review.',submitContribution:'Submit for review',recentTitle:'Contributions on this device',recentLead:'This list is local to this browser and is not shared without a database.',leaderTitle:'Leaderboard',leaderNote:'Rankings require account and database integration.',footerText:'A community idea that can grow — current data is illustrative.',
+ pending:'Pending review',approved:'Approved',rejected:'Rejected',needs:'Needs contribution',species:'Suggested species',water:'Water needs',native:'Locally suitable',empty:'No contributions yet.',toastPhoto:'Please upload a real photo before submitting.',toastSaved:'Contribution saved locally as pending review. No points were awarded.',toastSearch:'No zone found.',toastLocation:'Could not locate you. Check location permission and secure connection.',mySubmission:'Contribution',desc:'Description',noDescription:'No description'
+ }
+};
+
+let lang='ar',filter='all',selected=null,map=null,markerLayer=null,previewData=null;
+const storageKey='cig.submissions.v2';
+const t=k=>TXT[lang][k]||k;
+const zoneName=z=>z[lang];
+const speciesFor=z=>SPECIES.find(s=>s.id===z.species)||SPECIES[0];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function readSubs(){try{return JSON.parse(localStorage.getItem(storageKey)||'[]')}catch{return []}}
+let submissions=readSubs();
+function toast(msg){const el=$('#toast');el.textContent=msg;el.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.hidden=true,3500)}
+function saveSubs(){
+ try{localStorage.setItem(storageKey,JSON.stringify(submissions));return true}
+ catch{toast(lang==='ar'?'مساحة التخزين ممتلئة. اختر صورة أصغر.':'Storage is full. Choose a smaller photo.');return false}
+}
+function countFor(z,status){return submissions.filter(s=>s.zoneId===z.id&&s.status===status).length}
+function statusFor(z){return countFor(z,'approved')>0?'green':countFor(z,'pending')>0?'amber':'red'}
+function renderStats(){
+ const approved=submissions.filter(s=>s.status==='approved').length;
+ const pending=submissions.filter(s=>s.status==='pending').length;
+ $('#heroTrees').textContent=approved;$('#heroPending').textContent=pending;$('#heroZones').textContent=ZONES.length;
+ $('#impactTrees').textContent=approved;$('#impactPending').textContent=pending;$('#impactZones').textContent=ZONES.length;$('#impactSpecies').textContent=SPECIES.length;
+ // النقاط تظل صفرًا حتى لا نمنح نقاطًا دون نظام اعتماد حقيقي.
+ $('#pointsValue').textContent='0';
+}
+function markerIcon(status){
+ const color=status==='green'?'#1f7a4d':status==='amber'?'#c9821a':'#bf3b2b';
+ return L.divIcon({className:'',html:`<div style="width:26px;height:26px;border:3px solid #fff8e7;border-radius:50% 50% 50% 5px;transform:rotate(-45deg);background:${color};box-shadow:0 3px 10px #0005"></div>`,iconSize:[28,28],iconAnchor:[14,26]});
+}
+function buildMarkers(){
+ if(!map||!markerLayer)return;
+ markerLayer.clearLayers();
+ ZONES.forEach(z=>{
+  const st=statusFor(z);
+  if(filter!=='all'&&filter!==st)return;
+  const marker=L.marker([z.lat,z.lng],{icon:markerIcon(st),title:zoneName(z)}).addTo(markerLayer);
+  marker.on('click',()=>selectZone(z));
+ });
+}
+function selectZone(z){
+ selected=z;
+ map.flyTo([z.lat,z.lng],Math.max(map.getZoom(),14),{duration:.5});
+ renderPanel();
+ $('#zonePanel').classList.add('open');
+ $('#zoneSelect').value=z.id;
+}
+function renderPanel(){
+ if(!selected)return;
+ const z=selected,s=speciesFor(z),st=statusFor(z);
+ const approved=countFor(z,'approved'),pending=countFor(z,'pending');
+ $('#zonePanel').innerHTML=`
+ <div class="panel-top"><span class="status ${st}">${esc(t(st==='green'?'approved':st==='amber'?'pending':'needs'))}</span><button class="close" id="closePanel" aria-label="Close">×</button></div>
+ <h3>${esc(zoneName(z))}</h3>
+ <div class="muted small">${esc(t('species'))}: ${esc(s[lang])}</div>
+ <div class="panel-meta">
+  <div><small>${esc(t('water'))}</small>${esc(lang==='ar'?s.water:s.waterEn)}</div>
+  <div><small>${esc(t('native'))}</small>${s.native?'✓':'—'}</div>
+  <div><small>${esc(t('approved'))}</small>${approved}</div>
+  <div><small>${esc(t('pending'))}</small>${pending}</div>
+ </div>
+ <p class="small muted">${lang==='ar'?'لن تتحول المنطقة للأخضر إلا بعد اعتماد مساهمة.':'The zone turns green only after an approval.'}</p>
+ <button class="btn gold wide" id="contributeFromZone">${esc(t('joinNow'))}</button>`;
+ $('#closePanel').onclick=()=>$('#zonePanel').classList.remove('open');
+ $('#contributeFromZone').onclick=()=>{document.querySelector('#participate').scrollIntoView({behavior:'smooth'});$('#zoneSelect').value=z.id};
+}
+function renderTrees(){
+ $('#treeGrid').innerHTML=SPECIES.map(s=>`<article class="tree-card"><div style="font-size:1.8rem">🌳</div><h3 class="display">${esc(s[lang])}</h3><div class="latin">${esc(s.sci)}</div><span class="tag">${esc(lang==='ar'?s.water:s.waterEn)}</span>${s.native?`<span class="tag">${esc(t('native'))}</span>`:''}</article>`).join('');
+}
+function renderZoneSelect(){
+ const sel=$('#zoneSelect'),old=sel.value;
+ sel.innerHTML=ZONES.map(z=>`<option value="${z.id}">${esc(zoneName(z))}</option>`).join('');
+ sel.value=(selected&&selected.id)||old||ZONES[0].id;
+}
+function renderActivity(){
+ const box=$('#activityList');
+ if(!submissions.length){box.innerHTML=`<p class="muted small">${esc(t('empty'))}</p>`;return}
+ box.innerHTML=submissions.slice().reverse().slice(0,8).map(s=>{
+  const z=ZONES.find(z=>z.id===s.zoneId)||ZONES[0];
+  return `<div class="activity"><strong>${esc(s.name||t('mySubmission'))}</strong> · ${esc(zoneName(z))}
+  <div class="muted small">${esc(t(s.status==='approved'?'approved':s.status==='rejected'?'rejected':'pending'))} · ${esc(s.description||t('noDescription'))}</div></div>`;
+ }).join('');
+}
+function renderLeader(){
+ const approved=submissions.filter(s=>s.status==='approved'),counts={};
+ approved.forEach(s=>{const n=s.name||(lang==='ar'?'مشارك':'Contributor');counts[n]=(counts[n]||0)+1});
+ const rows=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+ $('#leaderList').innerHTML=rows.length?rows.map(([name,n],i)=>`<li><span class="rank">${i+1}</span><span>${esc(name)}</span><strong>${n} ${lang==='ar'?'مساهمة':'contributions'}</strong></li>`).join(''):`<li class="muted small">${esc(t('leaderNote'))}</li>`;
+}
+function applyLang(){
+ document.documentElement.lang=lang;
+ document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+ document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n)});
+ document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{el.placeholder=t(el.dataset.i18nPlaceholder)});
+ $('#langBtn').textContent=lang==='ar'?'EN':'عربي';
+ renderZoneSelect();renderTrees();renderStats();renderActivity();renderLeader();buildMarkers();
+ if(selected)renderPanel();
+}
+function compressImage(file){
+ return new Promise((resolve,reject)=>{
+  if(!file||!file.type.startsWith('image/'))return reject(new Error('not-image'));
+  const url=URL.createObjectURL(file),img=new Image();
+  img.onload=()=>{
+   try{
+    const max=800,scale=Math.min(1,max/Math.max(img.width,img.height));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(img.width*scale));
+    canvas.height=Math.max(1,Math.round(img.height*scale));
+    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+    URL.revokeObjectURL(url);
+    resolve(canvas.toDataURL('image/jpeg',.62));
+   }catch(e){URL.revokeObjectURL(url);reject(e)}
   };
-  const ZONES = [
-    {id:'zamalek',ar:'الزمالك',en:'Zamalek',dAr:'حي الزمالك',dEn:'Zamalek',lat:30.0605,lng:31.2197,needed:60,planted:0,area:1200,species:'ficus'},
-    {id:'gardens',ar:'جاردن سيتي',en:'Garden City',dAr:'قصر النيل',dEn:'Qasr El Nil',lat:30.0380,lng:31.2300,needed:40,planted:34,area:800,species:'jacaranda'},
-    {id:'downtown',ar:'وسط البلد',en:'Downtown',dAr:'عابدين',dEn:'Abdeen',lat:30.0452,lng:31.2420,needed:80,planted:0,area:1500,species:'lebbeck'},
-    {id:'heliopolis',ar:'مصر الجديدة',en:'Heliopolis',dAr:'مصر الجديدة',dEn:'Heliopolis',lat:30.0900,lng:31.3300,needed:90,planted:45,area:2100,species:'palm'},
-    {id:'nasr',ar:'مدينة نصر',en:'Nasr City',dAr:'مدينة نصر',dEn:'Nasr City',lat:30.0500,lng:31.3400,needed:110,planted:0,area:2400,species:'lebbeck'},
-    {id:'maadi',ar:'المعادي',en:'Maadi',dAr:'المعادي',dEn:'Maadi',lat:29.9600,lng:31.2500,needed:100,planted:100,area:2600,species:'ficus'},
-    {id:'helwan',ar:'حلوان',en:'Helwan',dAr:'حلوان',dEn:'Helwan',lat:29.8500,lng:31.3300,needed:70,planted:0,area:1800,species:'acacia'},
-    {id:'moqattam',ar:'المقطم',en:'Moqattam',dAr:'المقطم',dEn:'Moqattam',lat:30.0100,lng:31.2900,needed:65,planted:12,area:1400,species:'olive'}
-  ];
-  const PLANS = [
-    {ar:'راعي أخضر',en:'Green Sponsor',price:'25,000',featured:false,fAr:['50 شجرة','شهادة أثر'],fEn:['50 trees','Cert']},
-    {ar:'شريك',en:'Partner',price:'75,000',featured:true,fAr:['200 شجرة','تقرير أثر'],fEn:['200 trees','Report']},
-    {ar:'راعي رئيسي',en:'Lead Sponsor',price:'200,000',featured:false,fAr:['600 شجرة','منطقة باسمك'],fEn:['600 trees','Zone named']}
-  ];
-
-  // ====== 2. الترجمة ======
-  const I18N = {
-    ar: {'brand':'القاهرة الخضراء','brand.sub':'مبادرة تخضير القاهرة','nav.map':'الخريطة','nav.how':'إزاي بتشتغل','nav.impact':'الأثر','nav.trees':'دليل الأشجار','nav.companies':'الشركات','nav.points':'نقطة','hero.badge':'مبادرة وطنية لتخضير القاهرة','hero.title':'القاهرة الخضراء','hero.lead':'خريطة حيّة لكل شجرة. اختر منطقة، ازرع شجرتها، صوّرها، وشوف الخريطة بتتحول من الأحمر للأخضر — بإيد شبابها.','hero.cta':'افتح الخريطة','hero.cta2':'إزاي بتشتغل؟','stat.trees':'شجرة','stat.zones':'منطقة','stat.co2':'طن CO₂ سنويًا','how.title':'ثلاث خطوات… وشجرة','how.sub':'من غير تعقيد.','how.s1t':'اختار منطقتك','how.s1d':'شوف المناطق الحمراء.','how.s2t':'ازرع شجرتك','how.s2d':'ازرع النوع المطلوب.','how.s3t':'صوّرها وارفعها','how.s3d':'المنطقة تتحول للأخضر.','map.title':'خريطة التخضير','map.sub':'اضغط على أي دبوس.','map.note':'بيانات تجريبية.','search.ph':'ابحث عن حي…','filter.all':'الكل','filter.red':'تحتاج زراعة','filter.amber':'جارية','filter.green':'مكتملة','panel.type':'نوع الشجرة','panel.area':'المساحة','panel.water':'احتياج المياه','panel.shade':'الظل','panel.plant':'ازرعها','panel.done':'مكتملة ✓','panel.plantedBy':'آخر المشاركات','panel.empty':'كن أول واحد.','water.low':'مياه قليلة','water.med':'مياه متوسطة','shade.high':'ظل عالي','shade.med':'ظل متوسط','shade.low':'ظل خفيف','native.yes':'محلي','modal.title':'سجّل شجرتك','modal.sub':'اكتب اسمك وارفع صورة.','form.name':'اسمك','form.namePh':'اسمك','form.photo':'صورة الشجرة','form.optional':'(اختياري)','form.submit':'أكّد الزراعة','form.cancel':'إلغاء','panel.anon':'مشارك','toast.planted':'تم! +50 نقطة 🌱','toast.demo':'نسخة تجريبية.','toast.notfound':'مفيش نتائج.','impact.title':'الأثر بالأرقام','impact.sub':'كل شجرة بتتحسب.','impact.trees':'شجرة مزروعة','impact.area':'م² مساحة خضراء','impact.co2':'كجم CO₂ سنويًا','impact.species':'أنواع أشجار','trees.title':'دليل الأشجار','trees.sub':'أنواع مختارة.','companies.title':'للشركات','companies.sub':'ساهم كراعي.','companies.cta':'تواصل','donate.title':'ساهم من أي مكان','donate.sub':'تبرعك بيتحوّل لشجر.','donate.cta':'ساهم الآن','donate.note':'نموذج أولي.','donate.egp':'ج.م','footer.tag':'مبادرة مجتمعية.','footer.demo':'نموذج أولي','footer.rights':'© '},
-    en: {'brand':'Cairo is Green','brand.sub':'Greening Cairo','nav.map':'Map','nav.how':'How','nav.impact':'Impact','nav.trees':'Trees','nav.companies':'Companies','nav.points':'pts','hero.badge':'National initiative','hero.title':'Cairo is Green','hero.lead':'A living map for every tree. Pick a zone, plant, upload, and watch the map turn green.','hero.cta':'Open Map','hero.cta2':'How it works','stat.trees':'trees','stat.zones':'zones','stat.co2':'tons CO₂ / yr','how.title':'Three steps','how.sub':'No complexity.','how.s1t':'Pick zone','how.s1d':'Find red zones.','how.s2t':'Plant it','how.s2d':'Plant the species.','how.s3t':'Snap & upload','how.s3d':'Earn points.','map.title':'Greening Map','map.sub':'Tap a pin.','map.note':'Prototype data.','search.ph':'Search…','filter.all':'All','filter.red':'Needs planting','filter.amber':'In progress','filter.green':'Complete','panel.type':'Species','panel.area':'Area','panel.water':'Water','panel.shade':'Shade','panel.plant':'Plant this','panel.done':'Complete ✓','panel.plantedBy':'Recent','panel.empty':'Be the first.','water.low':'Low water','water.med':'Medium water','shade.high':'High shade','shade.med':'Medium shade','shade.low':'Light shade','native.yes':'Native','modal.title':'Log tree','modal.sub':'Name and photo.','form.name':'Name','form.namePh':'Your name','form.photo':'Photo','form.optional':'(optional)','form.submit':'Confirm','form.cancel':'Cancel','panel.anon':'Volunteer','toast.planted':'Done! +50 points 🌱','toast.demo':'Prototype.','toast.notfound':'No results.','impact.title':'Impact','impact.sub':'Every tree counts.','impact.trees':'trees planted','impact.area':'m² green','impact.co2':'kg CO₂ / yr','impact.species':'species','trees.title':'Tree Guide','trees.sub':'Best species.','companies.title':'For Companies','companies.sub':'Sponsor.','companies.cta':'Contact','donate.title':'Contribute','donate.sub':'Your donation becomes trees.','donate.cta':'Donate','donate.note':'Prototype.','donate.egp':'EGP','footer.tag':'Community initiative.','footer.demo':'Prototype','footer.rights':'© '}
-  };
-
-  let lang = localStorage.getItem('cig.lang') || 'ar';
-  let points = Number(localStorage.getItem('cig.points')) || 0;
-  let plants = {}; try { plants = JSON.parse(localStorage.getItem('cig.plants')) || {}; } catch(e) { plants = {}; }
-  let filter = 'all', selected = null;
-  const t = k => (I18N[lang] && I18N[lang][k]) || k;
-  const L = o => (lang === 'ar' ? o.ar : o.en);
-  const $ = s => document.querySelector(s);
-
-  const plantedOf = z => z.planted + ((plants[z.id] && plants[z.id].count) || 0);
-  const statusOf = z => { const p = plantedOf(z); return p >= z.needed ? 'green' : (p > 0 ? 'amber' : 'red'); };
-
-  // ====== 3. الخريطة ======
-  const map = L.map('map', { zoomControl: false, minZoom: 10, maxZoom: 18 }).setView([30.0444, 31.2357], 12);
-  L.control.zoom({ position: 'bottomright' }).addTo(map);
-  
-  // استخدام خريطة نظيفة وموثوقة من OpenStreetMap
-  L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap'
-  }).addTo(map);
-
-  const layer = L.layerGroup().addTo(map);
-  const markers = new Map();
-  const TREE_SVG = '<path d="M12 2 5 11h4l-3 5h5v6h2v-6h5l-3-5h4L12 2z"/>';
-
-  function pinIcon(status) { return L.divIcon({ className: 'zone-marker ' + status, html: `<span class="pin"><svg viewBox="0 0 24 24">${TREE_SVG}</svg></span>`, iconSize: [38, 46], iconAnchor: [19, 44] }); }
-  function buildMarkers() {
-    layer.clearLayers(); markers.clear();
-    ZONES.forEach(z => {
-      const m = L.marker([z.lat, z.lng], { icon: pinIcon(statusOf(z)), title: L(z) }).on('click', () => selectZone(z));
-      markers.set(z.id, m);
-      if (filter === 'all' || statusOf(z) === filter) layer.addLayer(m);
-    });
-  }
-
-  // ====== 4. اللوحة الجانبية ======
-  const panel = $('#zonePanel');
-  function selectZone(z) { selected = z; map.flyTo([z.lat, z.lng], Math.max(map.getZoom(), 14), { duration: .8 }); renderPanel(); panel.classList.add('open'); }
-  function renderPanel() {
-    if (!selected) return;
-    const z = selected, s = SPECIES[z.species], p = plantedOf(z), st = statusOf(z);
-    const pct = Math.min(100, Math.round((p / z.needed) * 100));
-    const entries = ((plants[z.id] && plants[z.id].entries) || []).slice(0, 3);
-    panel.innerHTML = `
-      <div class="zp-head"><span class="zp-status ${st}">${t('filter.' + st)}</span><button class="zp-x" type="button" data-close-panel>×</button></div>
-      <h3 class="display">${L(z)}</h3><p class="zp-district">${lang === 'ar' ? z.dAr : z.dEn}</p>
-      <div class="zp-progress"><div class="bar"><i class="${st}" style="width:${pct}%"></i></div><span>${p} / ${z.needed}</span></div>
-      <dl class="zp-meta">
-        <div><dt>${t('panel.type')}</dt><dd>${L(s)} <em>${s.sci}</em></dd></div>
-        <div><dt>${t('panel.area')}</dt><dd>${z.area.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} m²</dd></div>
-        <div><dt>${t('panel.water')}</dt><dd>${t('water.' + s.water)}</dd></div>
-        <div><dt>${t('panel.shade')}</dt><dd>${t('shade.' + s.shade)}</dd></div>
-      </dl>
-      ${st === 'green' ? `<button class="btn outline wide" disabled>${t('panel.done')}</button>` : `<button class="btn gold wide" data-plant>${t('panel.plant')}</button>`}
-      <div class="zp-gallery"><p class="muted small">${t('panel.plantedBy')}</p>
-        ${entries.length ? entries.map(e => `<figure>${e.photo ? `<img src="${e.photo}">` : `<span class="ph">🌿</span>`}<figcaption>${e.name}</figcaption></figure>`).join('') : `<p class="muted small">${t('panel.empty')}</p>`}
-      </div>`;
-  }
-
-  document.addEventListener('click', e => {
-    if (e.target.closest('[data-close-panel]')) { panel.classList.remove('open'); selected = null; }
-    if (e.target.closest('[data-plant]') && selected) openModal(selected);
-  });
-
-  // ====== 5. رفع الصور ======
-  const modal = $('#plantModal'), form = $('#plantForm'), preview = $('#photoPreview');
-  let pendingZone = null;
-  function openModal(z) { pendingZone = z; preview.innerHTML = ''; form.reset(); modal.hidden = false; }
-  function closeModal() { modal.hidden = true; pendingZone = null; }
-  document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModal));
-  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-  
-  form.photo.addEventListener('change', () => {
-    const f = form.photo.files[0]; preview.innerHTML = '';
-    if (f) preview.innerHTML = `<img src="${URL.createObjectURL(f)}">`;
-  });
-
-  function compress(file) {
-    return new Promise(res => {
-      const img = new Image();
-      img.onload = () => {
-        const c = document.createElement('canvas');
-        const r = Math.min(1, 360 / Math.max(img.width, img.height));
-        c.width = img.width * r; c.height = img.height * r;
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        res(c.toDataURL('image/jpeg', .6));
-      };
-      img.src = URL.createObjectURL(file);
-    });
-  }
-
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    if (!pendingZone) return;
-    const z = pendingZone;
-    const name = (new FormData(form).get('name') || '').toString().trim() || t('panel.anon');
-    const file = form.photo.files[0];
-    const photo = file ? await compress(file) : null;
-    const rec = plants[z.id] || { count: 0, entries: [] };
-    rec.count += 1; rec.entries.unshift({ name, photo }); rec.entries = rec.entries.slice(0, 3);
-    plants[z.id] = rec;
-    localStorage.setItem('cig.plants', JSON.stringify(plants));
-    points += 50; localStorage.setItem('cig.points', points);
-    buildMarkers(); renderPanel(); renderStats(); updateHeader();
-    closeModal(); toast(t('toast.planted'));
-  });
-
-  // ====== 6. البحث ======
-  const searchInput = $('#searchInput'), suggest = $('#suggest');
-  searchInput.addEventListener('input', () => {
-    const q = searchInput.value.trim().toLowerCase();
-    if (!q) { suggest.hidden = true; return; }
-    const hits = ZONES.filter(z => (z.ar + z.en + z.dAr + z.dEn).toLowerCase().includes(q)).slice(0, 6);
-    suggest.innerHTML = hits.length ? hits.map(z => `<li data-zone="${z.id}"><i class="dot ${statusOf(z)}"></i><span>${L(z)}</span></li>`).join('') : `<li class="empty">${t('toast.notfound')}</li>`;
-    suggest.hidden = false;
-  });
-  suggest.addEventListener('click', e => {
-    const li = e.target.closest('[data-zone]'); if (!li) return;
-    const z = ZONES.find(x => x.id === li.dataset.zone);
-    searchInput.value = L(z); suggest.hidden = true; selectZone(z);
-  });
-  document.addEventListener('click', e => { if (!e.target.closest('.searchbox')) suggest.hidden = true; });
-
-  $('#filters').addEventListener('click', e => {
-    const b = e.target.closest('.chip'); if (!b) return;
-    filter = b.dataset.filter;
-    document.querySelectorAll('#filters .chip').forEach(c => c.classList.toggle('active', c === b));
-    buildMarkers();
-  });
-
-  $('#locateBtn').addEventListener('click', () => {
-    map.locate({ setView: true, maxZoom: 15 });
-    map.once('locationerror', () => toast(t('toast.geoErr')));
-  });
-
-  // ====== 7. الأرقام ======
-  const fmt = n => n.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US');
-  function renderStats() {
-    let trees = 0, area = 0;
-    ZONES.forEach(z => { const p = Math.min(plantedOf(z), z.needed); trees += p; area += z.area * (p / z.needed); });
-    const co2kg = trees * 21;
-    $('#heroTrees').textContent = fmt(trees); $('#heroZones').textContent = fmt(ZONES.length); $('#heroCo2').textContent = fmt(Math.round(co2kg / 100) / 10);
-    $('#impactTrees').textContent = fmt(trees); $('#impactArea').textContent = fmt(Math.round(area)); $('#impactCo2').textContent = fmt(Math.round(co2kg)); $('#impactSpecies').textContent = fmt(Object.keys(SPECIES).length);
-  }
-  function updateHeader() { $('#pointsValue').textContent = fmt(points); }
-
-  // ====== 8. الأشجار والشركات ======
-  function shapeSVG(shape) {
-    if (shape === 'palm') return `<svg viewBox="0 0 48 48"><path d="M24 42V22" stroke="currentColor" stroke-width="2.4"/><path d="M24 22c-6-6-13-5-16-1 5-1 9 0 12 3M24 22c6-6 13-5 16-1-5-1-9 0-12 3" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
-    return `<svg viewBox="0 0 48 48"><path d="M24 44V26" stroke="currentColor" stroke-width="2.4"/><path d="M24 26c-11 0-18-7-18-13 0-1 0-2 .5-3C10 14 16 16 24 16s14-2 17.5-6c.5 1 .5 2 .5 3 0 6-7 13-18 13z" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
-  }
-  function renderTrees() {
-    $('#treeGrid').innerHTML = Object.values(SPECIES).map(s => `<article class="tree-card"><div class="tree-ico">${shapeSVG(s.shape)}</div><h3 class="display">${L(s)}</h3><p class="sci">${s.sci}</p><ul class="tags"><li class="tag">${t('water.' + s.water)}</li><li class="tag">${t('shade.' + s.shade)}</li>${s.native ? `<li class="tag native">${t('native.yes')}</li>` : ''}</ul></article>`).join('');
-  }
-  function renderPlans() {
-    $('#planGrid').innerHTML = PLANS.map(p => `<article class="plan-card ${p.featured ? 'featured' : ''}"><h3 class="display">${L(p)}</h3><p class="price">${p.price} <small>${t('donate.egp')}</small></p><ul>${(lang === 'ar' ? p.fAr : p.fEn).map(f => `<li>${f}</li>`).join('')}</ul><button class="btn outline wide" onclick="alert('${t('toast.demo')}')">${t('companies.cta')}</button></article>`).join('');
-  }
-  function renderAmounts() {
-    const box = $('#amounts');
-    box.innerHTML = [100, 250, 500, 1000].map((v, i) => `<button class="amount ${i === 1 ? 'active' : ''}" type="button">${v} <small>${t('donate.egp')}</small></button>`).join('');
-    box.addEventListener('click', e => { const b = e.target.closest('.amount'); if (!b) return; box.querySelectorAll('.amount').forEach(x => x.classList.toggle('active', x === b)); });
-  }
-  $('#donateCta').addEventListener('click', () => toast(t('toast.demo')));
-
-  // ====== 9. اللغة والإشعارات ======
-  let toastTimer;
-  function toast(msg) { const el = $('#toast'); el.textContent = msg; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => el.hidden = true, 3200); }
-  
-  function applyLang() {
-    document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
-    document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
-    $('#langBtn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/><path d="M16 6l1.5-1.5M17.5 8l1.5-1.5M16 10l1.5-1.5" stroke-width="1.2"/></svg>`;
-    renderTrees(); renderPlans(); renderAmounts(); renderStats(); updateHeader(); renderPanel();
-  }
-  $('#langBtn').addEventListener('click', () => { lang = lang === 'ar' ? 'en' : 'ar'; localStorage.setItem('cig.lang', lang); applyLang(); });
-
-  // ====== 10. التشغيل ======
-  buildMarkers(); applyLang();
-  $('#year').textContent = new Date().getFullYear();
-  map.fitBounds(L.latLngBounds(ZONES.map(z => [z.lat, z.lng])).pad(0.15));
+  img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('image-load'))};
+  img.src=url;
+ });
+}
+$('#langBtn').addEventListener('click',()=>{lang=lang==='ar'?'en':'ar';applyLang()});
+$('#filters').addEventListener('click',e=>{
+ const b=e.target.closest('[data-filter]');if(!b)return;
+ filter=b.dataset.filter;
+ document.querySelectorAll('#filters .chip').forEach(x=>x.classList.toggle('active',x===b));
+ buildMarkers();
 });
+$('#searchInput').addEventListener('keydown',e=>{
+ if(e.key!=='Enter')return;
+ e.preventDefault();
+ const q=e.target.value.trim().toLowerCase();
+ const z=ZONES.find(z=>(z.ar+' '+z.en).toLowerCase().includes(q));
+ if(z)selectZone(z);else toast(t('toastSearch'));
+});
+$('#locateBtn').addEventListener('click',()=>{
+ if(!navigator.geolocation){toast(t('toastLocation'));return}
+ navigator.geolocation.getCurrentPosition(
+  pos=>map.flyTo([pos.coords.latitude,pos.coords.longitude],15),
+  ()=>toast(t('toastLocation')),
+  {enableHighAccuracy:true,timeout:10000}
+ );
+});
+$('#photoInput').addEventListener('change',async e=>{
+ const f=e.target.files&&e.target.files[0];
+ previewData=null;
+ const img=$('#photoPreview');img.style.display='none';img.removeAttribute('src');
+ if(!f)return;
+ if(!f.type.startsWith('image/')){e.target.value='';toast(t('toastPhoto'));return}
+ try{previewData=await compressImage(f);img.src=previewData;img.style.display='block'}
+ catch{e.target.value='';toast(t('toastPhoto'))}
+});
+$('#contributionForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const f=$('#photoInput').files[0];
+ if(!f||!previewData){toast(t('toastPhoto'));return}
+ const submit=$('#submitBtn');submit.disabled=true;
+ try{
+  const photo=previewData||await compressImage(f);
+  const item={
+   id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())),
+   zoneId:$('#zoneSelect').value,
+   name:$('#contributorName').value.trim(),
+   description:$('#contributionDescription').value.trim(),
+   photo,
+   status:'pending',
+   createdAt:new Date().toISOString()
+  };
+  submissions.push(item);
+  if(saveSubs()){
+   e.target.reset();previewData=null;
+   $('#photoPreview').removeAttribute('src');$('#photoPreview').style.display='none';
+   renderStats();renderActivity();renderLeader();buildMarkers();
+   if(selected)renderPanel();
+   toast(t('toastSaved'));
+  }else{submissions.pop()}
+ }catch(err){
+  toast(lang==='ar'?'تعذر حفظ الصورة. اختر صورة أصغر وحاول مرة أخرى.':'Could not save the image. Try a smaller photo.');
+ }finally{submit.disabled=false}
+});
+$('#year').textContent=new Date().getFullYear();
+
+if(typeof L!=='undefined'){
+ map=L.map('mapCanvas',{zoomControl:false,minZoom:9,maxZoom:19}).setView([30.0444,31.2357],11);
+ L.control.zoom({position:'bottomright'}).addTo(map);
+
+ // صور أقمار صناعية من Esri بدل خريطة الشوارع.
+ L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {
+   maxZoom:19,
+   attribution:'Imagery © Esri, Maxar, Earthstar Geographics, and the GIS User Community'
+  }
+ ).addTo(map);
+
+ markerLayer=L.layerGroup().addTo(map);
+ map.fitBounds(L.latLngBounds(ZONES.map(z=>[z.lat,z.lng])).pad(.12));
+
+ // إصلاح أبعاد الخريطة بعد تحميل الصفحة.
+ setTimeout(()=>map.invalidateSize(),250);
+ window.addEventListener('resize',()=>map.invalidateSize());
+ buildMarkers();
+}else{
+ $('#mapCanvas').innerHTML='<div style="padding:24px">تعذر تحميل مكتبة الخريطة. تحقق من اتصال الإنترنت ثم أعد تحميل الصفحة.</div>';
+}
+applyLang();
+})();
 </script>
 </body>
 </html>
